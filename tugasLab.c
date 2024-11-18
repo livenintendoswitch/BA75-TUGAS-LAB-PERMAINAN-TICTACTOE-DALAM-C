@@ -160,7 +160,7 @@ int mainMenu(int selection){
 void clearScreen() {
 }
 //menu difficulty
-int difficultyMenu(int selection) {
+int difficultyMenu() {
     int selection = 0;
     clearScreen();
     printf(" __       __   ______   _______   ________        _______   ________  _______   __       __   ______   ______  __    __   ______   __    __ \n");
@@ -178,7 +178,7 @@ int difficultyMenu(int selection) {
     else {
          printf("mulai permainan\033[0;32m \nkeluar dari game \033[0m");
     }
-    s
+    
     
 }
 
