@@ -2,16 +2,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <ncurses.h>
 #ifdef _WIN32
 #include <conio.h>
 #endif
 void systemClear(){
-    system("clear");
+    #if _WIN32
     system("cls");
+    #else
+    system("clear");
+    #endif
 }
 int game(){
 //masukin gamenya disini
+}
+//cek compile di os mana
+int getKey() {
+    #if _WIN32
+    return getch();
+    #else
+    return getchar();
+    #endif
 }
 //matiin cursor
 void disableCursor() {
@@ -39,12 +49,12 @@ int mainMenu(int selection){
          printf("mulai permainan\033[0;32m \nkeluar dari game \033[0m");
     }
 }
-
+void clearScreen() {
+}
 //menu difficulty
 int difficultyMenu() {
     int choice;
-    system("cls");//buat windows
-    system("clear");//buat linux
+    clearScreen();
     printf(" __       __   ______   _______   ________        _______   ________  _______   __       __   ______   ______  __    __   ______   __    __ \n");
     printf("/  \\     /  | /      \\ /       \\ /        |      /       \\ /        |/       \\ /  \\     /  | /      \\ /      |/  \\  /  | /      \\ /  \\  /  | \n");
     printf("$$  \\   /$$ |/$$$$$$  |$$$$$$$  |$$$$$$$$/       $$$$$$$  |$$$$$$$$/ $$$$$$$  |$$  \\   /$$ |/$$$$$$  |$$$$$$/ $$  \\ $$ |/$$$$$$  |$$  \\ $$ | \n");
@@ -89,23 +99,25 @@ int main() {
     //declare variable disini
     int valueWhileLoop = 1, choice, selection = 0;
     char key;
-    initscr();
-    nodelay(stdscr, TRUE);
+    system("stty -echo");//buat linux
     while(valueWhileLoop){
     mainMenu(selection);
-    system("stty -echo");//buat linux
     disableCursor();
-    key = getch();
+    key = getKey();
     if(key == 'w' || key == 'W') {
         if(selection > 0) {
             selection--;
         }
-    }   
-        else if(key == 's' || key == 'S'){
+    }   else if(key == 's' || key == 'S'){
             if(selection < 1) {
                 selection++;
             }
             else if(key == '\n'){
+                break;
+            }
+        }
+
+    }
                 if(selection == 0){
                 systemClear();
                 puts("loading.....");
@@ -116,14 +128,7 @@ int main() {
                 systemClear();
                 puts("terima kasih telah memainkan game kami :)");
                 sleep(2);
-                valueWhileLoop = 0;
                 }
-            }
-            
-    }
 
-
-
-    }
     return 0;
 }
