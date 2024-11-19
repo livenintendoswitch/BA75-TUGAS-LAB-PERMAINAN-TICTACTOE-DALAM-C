@@ -1,4 +1,3 @@
-//import library sesuai kebutuhan
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -12,105 +11,123 @@ void resetBoard() {
     }
 }
 
-void showboard(){
-	printf("\t TIC TAC TOE\n");
-	printf("       |       |      \n");
-    printf("       |       |      \n");
+void showboard() {
+    printf("\t TIC TAC TOE\n");
     printf("       |       |      \n");
     printf("   %c   |   %c   |   %c   \n", arr[1], arr[2], arr[3]);
     printf("-------|-------|-------\n");
-    printf("       |       |      \n");
-    printf("       |       |      \n");
     printf("   %c   |   %c   |   %c   \n", arr[4], arr[5], arr[6]);
-    printf("       |       |      \n");
-    printf("       |       |      \n");
     printf("-------|-------|-------\n");
-    printf("       |       |      \n");
-    printf("       |       |      \n");
     printf("   %c   |   %c   |   %c   \n", arr[7], arr[8], arr[9]);
     printf("       |       |      \n");
-    printf("       |       |      \n");	
 }
 
-int checkForWin()
-{
-    if (arr[1] == arr[2] && arr[2] == arr[3])
-        return 1;
-    else if (arr[4] == arr[5] && arr[5] == arr[6])
-        return 1;
-    else if (arr[7] == arr[8] && arr[8] == arr[9])
-        return 1;
-    else if (arr[1] == arr[4] && arr[4] == arr[7])
-        return 1;
-    else if (arr[2] == arr[5] && arr[5] == arr[8])
-        return 1;
-    else if (arr[3] == arr[6] && arr[6] == arr[9])
-        return 1;
-    else if (arr[3] == arr[6] && arr[6] == arr[9])
-        return 1;
-    else if (arr[1] == arr[5] && arr[5] == arr[9])
-        return 1;
-    else if (arr[3] == arr[5] && arr[5] == arr[7])
-        return 1;
-    else if (arr[1] != '1' && arr[2] != '2' && arr[3] != '3' && arr[4] != '4' && arr[5] != '5' && arr[6] != '6' && arr[7] != '7' && arr[8] != '8' && arr[9] != '9')
-        return 0;
-
-    else
-        return -1;
+int checkForWin() {
+    if (arr[1] == arr[2] && arr[2] == arr[3]) return 1;
+    if (arr[4] == arr[5] && arr[5] == arr[6]) return 1;
+    if (arr[7] == arr[8] && arr[8] == arr[9]) return 1;
+    if (arr[1] == arr[4] && arr[4] == arr[7]) return 1;
+    if (arr[2] == arr[5] && arr[5] == arr[8]) return 1;
+    if (arr[3] == arr[6] && arr[6] == arr[9]) return 1;
+    if (arr[1] == arr[5] && arr[5] == arr[9]) return 1;
+    if (arr[3] == arr[5] && arr[5] == arr[7]) return 1;
+	int i;
+    for (i = 1; i <= 9; i++) {
+        if (arr[i] == '0' + i) return -1; // Game lanjutt
     }
+    return 0; // seri
+}
 
-int game(){
-	resetBoard();
-	int player = 0;
-    int choice, i;
-    char mark;
-   	do{	   
-    	showboard();
-    	player++;
-    	player = (player % 2) ? 1 : 2;
-        printf("Player %d turn :", player);
-        scanf("%d", &choice);
-        mark = (player == 1) ? 'X' : 'O';
+int minimax(int depth, int isMaximizing) {
+    int score = checkForWin();
+    if (score == 1) return isMaximizing ? -10 + depth : 10 - depth;
+    if (score == 0) return 0;
 
-        if (choice == 1 && arr[1] == '1')
-            arr[1] = mark;
-        else if (choice == 2 && arr[2] == '2')
-            arr[2] = mark;
-        else if (choice == 3 && arr[3] == '3')
-            arr[3] = mark;
-        else if (choice == 4 && arr[4] == '4')
-            arr[4] = mark;
-        else if (choice == 5 && arr[5] == '5')
-            arr[5] = mark;
-        else if (choice == 6 && arr[6] == '6')
-            arr[6] = mark;
-        else if (choice == 7 && arr[7] == '7')
-            arr[7] = mark;
-        else if (choice == 8 && arr[8] == '8')
-            arr[8] = mark;
-        else if (choice == 9 && arr[9] == '9')
-            arr[9] = mark;
+    int bestScore = isMaximizing ? -1000 : 1000;
+    char mark = isMaximizing ? 'O' : 'X';
+	int i;
+    for (i = 1; i <= 9; i++) {
+        if (arr[i] == '0' + i) {
+            arr[i] = mark;
+            int currentScore = minimax(depth + 1, !isMaximizing);
+            arr[i] = '0' + i;
+            bestScore = isMaximizing
+                        ? (currentScore > bestScore ? currentScore : bestScore)
+                        : (currentScore < bestScore ? currentScore : bestScore);
+        }
+    }
+    return bestScore;
+}
 
-        else
-        {
-            printf("Invalid value\n");
-            player--;
-            getch();
+int getBestMove() {
+    int bestMove = -1;
+    int bestScore = -1000;
+	int i;
+    for (i = 1; i <= 9; i++) {
+        if (arr[i] == '0' + i) {
+            arr[i] = 'O'; // karakter untuk botnya
+            int moveScore = minimax(0, 0);
+            arr[i] = '0' + i;
+            if (moveScore > bestScore) {
+                bestScore = moveScore;
+                bestMove = i;
+            }
+        }
+    }
+    return bestMove;
+}
+
+void botTurn(int difficulty) {
+    if (difficulty == -1) { // Easy difficulty
+        int move;
+        do {
+            move = rand() % 9 + 1; // Random number between 1 and 9
+        } while (arr[move] != '0' + move); // Ensure the move is valid
+        arr[move] = 'O';
+    } else { // Hard difficulty
+        int move = getBestMove();
+        arr[move] = 'O';
+    }
+}
+
+void playerTurn(int player) {
+    int choice;
+    char mark = player == 1 ? 'X' : 'O';
+    printf("Player %d turn: ", player);
+    scanf("%d", &choice);
+
+    if (choice >= 1 && choice <= 9 && arr[choice] == '0' + choice) {
+        arr[choice] = mark;
+    } else {
+        printf("Invalid move! Try again.\n");
+        playerTurn(player);
+    }
+}
+
+int game(int botDifficulty) {
+    resetBoard();
+    int player = 1, result;
+
+    do {
+        showboard();
+        if (botDifficulty != 0 && player == 2) {
+            printf("Bot is thinking...\n");
+            sleep(1);
+            botTurn(botDifficulty);
+        } else {
+            playerTurn(player);
         }
 
-        i = checkForWin();
-	}while (i == -1);
-	showboard();
-    if (i == 1)
-    {
-        printf("Player %d Won\n", player);
+        result = checkForWin();
+        player = (player % 2) + 1;
+    } while (result == -1);
+
+    showboard();
+    if (result == 1) {
+        printf("Player %d wins!\n", (player % 2) + 1);
+    } else {
+        printf("Game draw!\n");
     }
-    else
-    {
-        printf("Game Draw\n");
-    }
-	
-    getch();
     return 0;
 }
 
@@ -128,20 +145,24 @@ int difficultyMenu() {
     printf("$$ |$$$/ $$ |$$ \\__$$ |$$ |__$$ |$$ |_____       $$ |      $$ |_____ $$ |  $$ |$$ |$$$/ $$ |$$ |  $$ | _$$ |_ $$ |$$$$ |$$ |  $$ |$$ |$$$$ | \n");
     printf("$$ | $/  $$ |$$    $$/ $$    $$/ $$       |      $$ |      $$       |$$ |  $$ |$$ | $/  $$ |$$ |  $$ |/ $$   |$$ | $$$ |$$ |  $$ |$$ | $$$ | \n");
     printf("$$/      $$/  $$$$$$/  $$$$$$$/  $$$$$$$$/       $$/       $$$$$$$$/ $$/   $$/ $$/      $$/ $$/   $$/ $$$$$$/ $$/   $$/ $$/   $$/ $$/   $$/ \n");
-    puts("1) awam");
-    puts("2) PROMASTER69420 (susah bro) ");
-    puts("3) balik ke menu utama"); 
+    puts("1) pvp");
+    puts("2) easy"); 
+    puts("3) PROMASTER69420 (susah bro) ");
+    puts("4) balik ke menu utama"); 
     printf("pilih skill lawan: ");
     scanf("%d", &choice);getchar();
     switch(choice)
     {
     case 1:
-        game();
+        game(0);
         break;
     case 2: 
-        game();
+        game(-1);
         break;
     case 3: 
+        game(1);
+        break;
+    case 4: 
         system("cls");//buat windows
         system("clear");//buat linux
         puts("kembali ke menu utama");
@@ -161,6 +182,7 @@ int difficultyMenu() {
 
 int main() {
     //declare variable disini
+    srand(time(NULL));
     int valueWhileLoop = 1, choice;
 
     while(valueWhileLoop){
