@@ -17,15 +17,16 @@ void clearScreen(){
 }
 
     void loadingScreen() {
+        int i, j;
     puts("LOADING");
-    for (int i = 0; i <= 10; i++) {
+    for (i = 0; i <= 10; i++) {
         printf("\r[");
         
-        for (int j = 0; j < i; j++) {
+        for (j = 0; j < i; j++) {
             printf("#");
         }
         
-        for (int j = i; j < 10; j++) {
+        for (j = i; j < 10; j++) {
             printf(" ");
         }
         
@@ -140,7 +141,8 @@ int main() {
         puts("2. leaderboard");
         puts("3. keluar dari game");    
         printf("ketik nomor di pilihan: ");
-        scanf("%d", &choice);
+        int *pchoice = &choice;
+        scanf("%d", & *pchoice);
         switch (choice){
         case 1:
             clearScreen();
