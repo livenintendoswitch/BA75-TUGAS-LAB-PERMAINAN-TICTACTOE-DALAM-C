@@ -36,7 +36,8 @@ char getch(void)
   return getch_(0);
 }
 #endif
-
+//global variable
+ int menuSelection = 0, diffSelection = 0, leadSelection = 0, modeSelection = 0;
 //USER INTERFACE
 void clearScreen(){
     #if defined(_WIN32) || defined(_WIN64)
@@ -47,7 +48,6 @@ void clearScreen(){
 }
 //kontrol dimasukin ke fungsi biar bisa dipake ulang
 int navControls(int *selection, int Options) {
-    while(1){
     char key = getch();
      if(key == 'w' || key == 'W') {
             if(*selection > 0) {
@@ -58,9 +58,9 @@ int navControls(int *selection, int Options) {
                 (*selection)++;
             }
         } else if(key == '\n') {
-            break;
+            return 1;
         }
-    }
+    return 0;
 }
 
 //matiin cursor
@@ -68,7 +68,7 @@ void disableCursor() {
      printf("\033[?25l");
 }
 //main menu
-void mainMenu(int *menuSelection){
+void mainMenu(int menuSelection){
     clearScreen();
     printf("/$$$$$$$$ /$$$$$$  /$$$$$$        /$$$$$$$$ /$$$$$$   /$$$$$$        /$$$$$$$$ /$$$$$$  /$$$$$$$$\n");
     printf("|__  $$__/|_  $$_/ /$$__  $$      |__  $$__//$$__  $$ /$$__  $$      |__  $$__//$$__  $$| $$_____/ \n");
@@ -82,43 +82,46 @@ void mainMenu(int *menuSelection){
     puts("note: mohon menggunakan program ini dalam full screen");
     puts("selamat datang di permainan tic tac toe pilih salah satu opsi:");
     printf("\033[0;33mHINT: GUNAKAN W UNTUK SELEKSI KEATAS DAN S UNTUK SELEKSI KEBAWAH\n\033[0m");
-    if (*menuSelection == 0) {
+    if (menuSelection == 0) {
         printf("\033[0;32mmulai permainan\033[0m \nkeluar dari game \nLeaderboard");
     }
-    else if(*menuSelection == 1) {
-         printf("mulai permainan\033[0;32m \nkeluar dari game \033[0m \nLeaderboard");
+    else if(menuSelection == 1) {
+        printf("mulai permainan\033[0;32m \nkeluar dari game \033[0m \nLeaderboard");
+    }
+    else if(menuSelection == 2) {
+        printf("mulai permainan \nkeluar dari game \033[0;32m\nLeaderboard\033[0m");
+    }
+}
+//menu mode
+void gameModeMenu(int modeSelection) {
+    clearScreen();
+        printf(" __       __   ______   _______   ________        _______   ________  _______   __       __   ______   ______  __    __   ______   __    __ \n");
+        printf("/  \\     /  | /      \\ /       \\ /        |      /       \\ /        |/       \\ /  \\     /  | /      \\ /      |/  \\  /  | /      \\ /  \\  /  | \n");
+        printf("$$  \\   /$$ |/$$$$$$  |$$$$$$$  |$$$$$$$$/       $$$$$$$  |$$$$$$$$/ $$$$$$$  |$$  \\   /$$ |/$$$$$$  |$$$$$$/ $$  \\ $$ |/$$$$$$  |$$  \\ $$ | \n");
+        printf("$$$  \\ /$$$ |$$ |  $$ |$$ |  $$ |$$ |__          $$ |__$$ |$$ |__    $$ |__$$ |$$$  \\ /$$$ |$$ |__$$ |  $$ |  $$$  \\$$ |$$ |__$$ |$$$  \\$$ | \n");
+        printf("$$$$  /$$$$ |$$ |  $$ |$$ |  $$ |$$    |         $$    $$/ $$    |   $$    $$< $$$$  /$$$$ |$$    $$ |  $$ |  $$$$  $$ |$$    $$ |$$$$  $$ | \n");
+        printf("$$ $$ $$/$$ |$$ |  $$ |$$ |  $$ |$$$$$/          $$$$$$$/  $$$$$/    $$$$$$$  |$$ $$ $$/$$ |$$$$$$$$ |  $$ |  $$ $$ $$ |$$$$$$$$ |$$ $$ $$ | \n");
+        printf("$$ |$$$/ $$ |$$ \\__$$ |$$ |__$$ |$$ |_____       $$ |      $$ |_____ $$ |  $$ |$$ |$$$/ $$ |$$ |  $$ | _$$ |_ $$ |$$$$ |$$ |  $$ |$$ |$$$$ | \n");
+        printf("$$ | $/  $$ |$$    $$/ $$    $$/ $$       |      $$ |      $$       |$$ |  $$ |$$ | $/  $$ |$$ |  $$ |/ $$   |$$ | $$$ |$$ |  $$ |$$ | $$$ | \n");
+        printf("$$/      $$/  $$$$$$/  $$$$$$$/  $$$$$$$$/       $$/       $$$$$$$$/ $$/   $$/ $$/      $$/ $$/   $$/ $$$$$$/ $$/   $$/ $$/   $$/ $$/   $$/ \n");
+        if (modeSelection == 0) {
+            printf("\033[0;32mmulai permainan\033[0m \nlocal multiplayer \nbalik ke menu utama");
         }
-        else if(*menuSelection == 2) {
-            printf("mulai permainan \nkeluar dari game \033[0;32m\nLeaderboard\033[0m");
+        else if (modeSelection == 1) {
+            printf("mulai permainan \n\033[0;32mlocal multiplayer \033[0m \nbalik ke menu utama");
+        }
+        else if (modeSelection == 2) {
+            printf("mulai permainan \nlocal multiplayer  \n\033[0;32mbalik ke menu utama \033[0m");
         }
 }
-//menu difficulty
-void difficultyMenu(int *diffSelection) {
-    clearScreen();
-    printf(" __       __   ______   _______   ________        _______   ________  _______   __       __   ______   ______  __    __   ______   __    __ \n");
-    printf("/  \\     /  | /      \\ /       \\ /        |      /       \\ /        |/       \\ /  \\     /  | /      \\ /      |/  \\  /  | /      \\ /  \\  /  | \n");
-    printf("$$  \\   /$$ |/$$$$$$  |$$$$$$$  |$$$$$$$$/       $$$$$$$  |$$$$$$$$/ $$$$$$$  |$$  \\   /$$ |/$$$$$$  |$$$$$$/ $$  \\ $$ |/$$$$$$  |$$  \\ $$ | \n");
-    printf("$$$  \\ /$$$ |$$ |  $$ |$$ |  $$ |$$ |__          $$ |__$$ |$$ |__    $$ |__$$ |$$$  \\ /$$$ |$$ |__$$ |  $$ |  $$$  \\$$ |$$ |__$$ |$$$  \\$$ | \n");
-    printf("$$$$  /$$$$ |$$ |  $$ |$$ |  $$ |$$    |         $$    $$/ $$    |   $$    $$< $$$$  /$$$$ |$$    $$ |  $$ |  $$$$  $$ |$$    $$ |$$$$  $$ | \n");
-    printf("$$ $$ $$/$$ |$$ |  $$ |$$ |  $$ |$$$$$/          $$$$$$$/  $$$$$/    $$$$$$$  |$$ $$ $$/$$ |$$$$$$$$ |  $$ |  $$ $$ $$ |$$$$$$$$ |$$ $$ $$ | \n");
-    printf("$$ |$$$/ $$ |$$ \\__$$ |$$ |__$$ |$$ |_____       $$ |      $$ |_____ $$ |  $$ |$$ |$$$/ $$ |$$ |  $$ | _$$ |_ $$ |$$$$ |$$ |  $$ |$$ |$$$$ | \n");
-    printf("$$ | $/  $$ |$$    $$/ $$    $$/ $$       |      $$ |      $$       |$$ |  $$ |$$ | $/  $$ |$$ |  $$ |/ $$   |$$ | $$$ |$$ |  $$ |$$ | $$$ | \n");
-    printf("$$/      $$/  $$$$$$/  $$$$$$$/  $$$$$$$$/       $$/       $$$$$$$$/ $$/   $$/ $$/      $$/ $$/   $$/ $$$$$$/ $$/   $$/ $$/   $$/ $$/   $$/ \n");
-       if (*diffSelection == 0) {
-        printf("\033[0;32mmulai permainan\033[0m \nkeluar dari game \nlocal multiplayer \nbalik ke menu utama");
-    }
-    else if (*diffSelection == 1) {
-        printf("mulai permainan \033[0;32m\nkeluar dari game\033[0m \nlocal multiplayer \nbalik ke menu utama");
-    }
-    else if (*diffSelection == 2) {
-        printf("mulai permainan \nkeluar dari game \n033[0;32mlocal multiplayer \033[0m \nbalik ke menu utama");
-    }
-    else if (*diffSelection == 3) {
-        printf("mulai permainan \nkeluar dari game \nlocal multiplayer  \nbalik ke menu utama \033[0m");
-    }  
+
+void difficultyMenu(int diffselection){
+
 }
 int leaderboardMenu(int *leadSelection) {
     printf("leaderboard in progress...");
+    sleep(2);
+    clearScreen();
     return 0;
 }
 
@@ -146,38 +149,65 @@ void loadingScreen() {
 
 int main() {
     //declare variable disini
-    int valueWhileLoop = 1, menuSelection = 0, diffSelection = 0, leadSelection = 0;
+    int valueWhileLoop = 1;
     system("stty -echo");//buat linux
     while(valueWhileLoop){
-    mainMenu(&menuSelection);
-    disableCursor();
-    navControls(&menuSelection, 3);
-    switch(menuSelection){
-        case 0:
-        clearScreen();
-        loadingScreen();
-        clearScreen();
-        difficultyMenu(&diffSelection);
-        valueWhileLoop = 1;
-        navControls(&diffSelection, 4);
-        break;
-        case 1:
-        clearScreen();
-        puts("terima kasih telah memainkan game kami :)");
-        sleep(2);
-        valueWhileLoop = 0;
-        break;
-        case 2: 
-        clearScreen();
-        loadingScreen();
-        clearScreen();
-        leaderboardMenu(&leadSelection);
-        break;
-        default:
-        break;
+        mainMenu(menuSelection);
+        disableCursor();
+        if (navControls(&menuSelection, 3)){
+            switch(menuSelection){
+            case 0:
+                clearScreen();
+                loadingScreen();
+                clearScreen();
+            while(1) {
+                gameModeMenu(modeSelection);
+                if(navControls(&modeSelection, 3)){
+                    switch(modeSelection){
+                    case 0:
+                        clearScreen();
+                        loadingScreen();
+                        clearScreen();
+                        difficultyMenu(diffSelection);
+                        break;
+                    case 1:
+                        clearScreen();
+                        loadingScreen();
+                        clearScreen();
+                        //game
+                        break;
+                    case 2:
+                        clearScreen();
+                        loadingScreen();
+                        clearScreen();
+                        return 1;
+                        break;
+                        default:
+                        Puts("system failure");
+                        break;                    
+                        }
+                     }
+                    break;
+                }
+                break;
+                case 1:
+                    clearScreen();
+                    puts("terima kasih telah memainkan game kami :)");
+                    sleep(2);
+                    valueWhileLoop = 0;
+                    break;
+                case 2: 
+                    clearScreen();
+                    loadingScreen();
+                    clearScreen();
+                    leaderboardMenu(&leadSelection);
+                    break;
+                default:
+                    break;
+            }  
         }
-    }  
     return 0;
+    }
 }
 
 //KOMPONEN GAME
