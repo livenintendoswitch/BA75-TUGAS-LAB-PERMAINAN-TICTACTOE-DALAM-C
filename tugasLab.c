@@ -2,42 +2,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#if defined(_WIN32) || defined(_WIN64) 
-#include <conio.h>
-#else 
-#include <termios.h>
-//getch() alternatif untuk linux
-//sumber = https://gist.github.com/ninovsnino/f910701ea912f03b73a1d0895d213b0e
-static struct termios old, new;
-
-/* Initialize new terminal i/o settings */
-void initTermios(int echo){
-  tcgetattr(0, &old); /* grab old terminal i/o settings */
-  new = old; /* make new settings same as old settings */
-  new.c_lflag &= ~ICANON; /* disable buffered i/o */
-  new.c_lflag &= echo ? ECHO : ~ECHO; /* set echo mode */
-  tcsetattr(0, TCSANOW, &new); /* use these new terminal i/o settings now */
-}
-
-void resetTermios(void) {
-tcsetattr(0, TCSANOW, &old);
-}
-
-/* Read 1 character - echo defines echo mode */
-char getch_(int echo){
-  char ch;
-  initTermios(echo);
-  ch = getchar();
-  resetTermios();
-  return ch;
-}
-char getch(void) 
-{
-  return getch_(0);
-}
-#endif
-
-//USER INTERFACE
+void clearScreen();
+void loadingScreen(void);
+int gamemode();
+int difficultyMenu();
+int game(int difficulty);
+//USER INTERFACE versi simple buat ngejar deadline
 void clearScreen(){
     #if defined(_WIN32) || defined(_WIN64)
     system("cls");
@@ -45,84 +15,8 @@ void clearScreen(){
     system("clear");
     #endif
 }
-//kontrol dimasukin ke fungsi biar bisa dipake ulang
-int navControls(int *selection, int Options) {
-    while(1){
-    char key = getch();
-     if(key == 'w' || key == 'W') {
-            if(*selection > 0) {
-                (*selection)--;
-            }
-        } else if(key == 's' || key == 'S') {
-            if(*selection < Options - 1) {
-                (*selection)++;
-            }
-        } else if(key == '\n') {
-            break;
-        }
-    }
-}
 
-//matiin cursor
-void disableCursor() {
-     printf("\033[?25l");
-}
-//main menu
-void mainMenu(int *menuSelection){
-    clearScreen();
-    printf("/$$$$$$$$ /$$$$$$  /$$$$$$        /$$$$$$$$ /$$$$$$   /$$$$$$        /$$$$$$$$ /$$$$$$  /$$$$$$$$\n");
-    printf("|__  $$__/|_  $$_/ /$$__  $$      |__  $$__//$$__  $$ /$$__  $$      |__  $$__//$$__  $$| $$_____/ \n");
-    printf("   | $$     | $$  | $$  \\__/         | $$  | $$  \\ $$| $$  \\__/         | $$  | $$  \\ $$| $$      \n");
-    printf("   | $$     | $$  | $$               | $$  | $$$$$$$$| $$               | $$  | $$  | $$| $$$$$   \n");
-    printf("   | $$     | $$  | $$               | $$  | $$__  $$| $$               | $$  | $$  | $$| $$__/   \n");
-    printf("   | $$     | $$  | $$    $$         | $$  | $$  | $$| $$    $$         | $$  | $$  | $$| $$      \n");
-    printf("   | $$    /$$$$$$|  $$$$$$/         | $$  | $$  | $$|  $$$$$$/         | $$  |  $$$$$$/| $$$$$$$$\n");
-    printf("   |__/   |______/ \\______/          |__/  |__/  |__/ \\______/          |__/   \\______/ |________/ \n");
-    puts("group nasi daun ayam geprek");
-    puts("note: mohon menggunakan program ini dalam full screen");
-    puts("selamat datang di permainan tic tac toe pilih salah satu opsi:");
-    printf("\033[0;33mHINT: GUNAKAN W UNTUK SELEKSI KEATAS DAN S UNTUK SELEKSI KEBAWAH\n\033[0m");
-    if (*menuSelection == 0) {
-        printf("\033[0;32mmulai permainan\033[0m \nkeluar dari game \nLeaderboard");
-    }
-    else if(*menuSelection == 1) {
-         printf("mulai permainan\033[0;32m \nkeluar dari game \033[0m \nLeaderboard");
-        }
-        else if(*menuSelection == 2) {
-            printf("mulai permainan \nkeluar dari game \033[0;32m\nLeaderboard\033[0m");
-        }
-}
-//menu difficulty
-void difficultyMenu(int *diffSelection) {
-    clearScreen();
-    printf(" __       __   ______   _______   ________        _______   ________  _______   __       __   ______   ______  __    __   ______   __    __ \n");
-    printf("/  \\     /  | /      \\ /       \\ /        |      /       \\ /        |/       \\ /  \\     /  | /      \\ /      |/  \\  /  | /      \\ /  \\  /  | \n");
-    printf("$$  \\   /$$ |/$$$$$$  |$$$$$$$  |$$$$$$$$/       $$$$$$$  |$$$$$$$$/ $$$$$$$  |$$  \\   /$$ |/$$$$$$  |$$$$$$/ $$  \\ $$ |/$$$$$$  |$$  \\ $$ | \n");
-    printf("$$$  \\ /$$$ |$$ |  $$ |$$ |  $$ |$$ |__          $$ |__$$ |$$ |__    $$ |__$$ |$$$  \\ /$$$ |$$ |__$$ |  $$ |  $$$  \\$$ |$$ |__$$ |$$$  \\$$ | \n");
-    printf("$$$$  /$$$$ |$$ |  $$ |$$ |  $$ |$$    |         $$    $$/ $$    |   $$    $$< $$$$  /$$$$ |$$    $$ |  $$ |  $$$$  $$ |$$    $$ |$$$$  $$ | \n");
-    printf("$$ $$ $$/$$ |$$ |  $$ |$$ |  $$ |$$$$$/          $$$$$$$/  $$$$$/    $$$$$$$  |$$ $$ $$/$$ |$$$$$$$$ |  $$ |  $$ $$ $$ |$$$$$$$$ |$$ $$ $$ | \n");
-    printf("$$ |$$$/ $$ |$$ \\__$$ |$$ |__$$ |$$ |_____       $$ |      $$ |_____ $$ |  $$ |$$ |$$$/ $$ |$$ |  $$ | _$$ |_ $$ |$$$$ |$$ |  $$ |$$ |$$$$ | \n");
-    printf("$$ | $/  $$ |$$    $$/ $$    $$/ $$       |      $$ |      $$       |$$ |  $$ |$$ | $/  $$ |$$ |  $$ |/ $$   |$$ | $$$ |$$ |  $$ |$$ | $$$ | \n");
-    printf("$$/      $$/  $$$$$$/  $$$$$$$/  $$$$$$$$/       $$/       $$$$$$$$/ $$/   $$/ $$/      $$/ $$/   $$/ $$$$$$/ $$/   $$/ $$/   $$/ $$/   $$/ \n");
-       if (*diffSelection == 0) {
-        printf("\033[0;32mmulai permainan\033[0m \nkeluar dari game \nlocal multiplayer \nbalik ke menu utama");
-    }
-    else if (*diffSelection == 1) {
-        printf("mulai permainan \033[0;32m\nkeluar dari game\033[0m \nlocal multiplayer \nbalik ke menu utama");
-    }
-    else if (*diffSelection == 2) {
-        printf("mulai permainan \nkeluar dari game \n033[0;32mlocal multiplayer \033[0m \nbalik ke menu utama");
-    }
-    else if (*diffSelection == 3) {
-        printf("mulai permainan \nkeluar dari game \nlocal multiplayer  \nbalik ke menu utama \033[0m");
-    }  
-}
-int leaderboardMenu(int *leadSelection) {
-    printf("leaderboard in progress...");
-    return 0;
-}
-
-void loadingScreen() {
+    void loadingScreen() {
     puts("LOADING");
     for (int i = 0; i <= 10; i++) {
         printf("\r[");
@@ -143,40 +37,131 @@ void loadingScreen() {
         usleep(50000);  
     }
 }
+int difficultyMenu(){
+    int choice;
+    printf("                         __                                                    __                    __     \n");
+    printf("                        /  |                                                  /  |                  /  |    \n");
+    printf(" _____  ____    ______  $$ |  ______   __   __   __   ______   _______        $$ |____    ______   _$$ |_   \n");
+    printf("/     \\/    \\  /      \\ $$ | /      \\ /  | /  | /  | /      \\ /       \\       $$      \\  /      \\ / $$   |  \n");
+    printf("$$$$$$ $$$$  |/$$$$$$  |$$ | $$$$$$  |$$ | $$ | $$ | $$$$$$  |$$$$$$$  |      $$$$$$$  |/$$$$$$  |$$$$$$/   \n");
+    printf("$$ | $$ | $$ |$$    $$ |$$ | /    $$ |$$ | $$ | $$ | /    $$ |$$ |  $$ |      $$ |  $$ |$$ |  $$ |  $$ | __ \n");
+    printf("$$ | $$ | $$ |$$$$$$$$/ $$ |/$$$$$$$ |$$ \\_$$ \\_$$ |/$$$$$$$ |$$ |  $$ |      $$ |__$$ |$$ \\__$$ |  $$ |/  |\n");
+    printf("$$ | $$ | $$ |$$       |$$ |$$    $$ |$$   $$   $$/ $$    $$ |$$ |  $$ |      $$    $$/ $$    $$/   $$  $$/ \n");
+    printf("$$/  $$/  $$/  $$$$$$$/ $$/  $$$$$$$/  $$$$$/$$$$/   $$$$$$$/ $$/   $$/       $$$$$$$/   $$$$$$/     $$$$/  \n");
+    puts("pilih level kesusahan lawan bot");
+    puts("1. mudah");
+    puts("2. susah");
+    puts("3. balik ke menu mode");
+    printf("ketik nomor di pilihan: ");
+       scanf("%d", &choice);
+    switch (choice){
+    case 1:
+        clearScreen();
+        loadingScreen();
+        clearScreen();
+        game(-1);
+        break;
+    case 2:
+        clearScreen();
+        loadingScreen();
+        clearScreen();
+        game(1);
+        break;
+    case 3:
+        return 0;
+        break;
+    default:
+        puts("pilihan tidak ada");
+    }
+
+}
+//menu difficulty
+int gamemode() {
+    int choice, valueWhileLoop = 1;
+    while(valueWhileLoop){
+        clearScreen();
+        printf(" __       __   ______   _______   ________        _______   ________  _______   __       __   ______   ______  __    __   ______   __    __ \n");
+        printf("/  \\     /  | /      \\ /       \\ /        |      /       \\ /        |/       \\ /  \\     /  | /      \\ /      |/  \\  /  | /      \\ /  \\  /  | \n");
+        printf("$$  \\   /$$ |/$$$$$$  |$$$$$$$  |$$$$$$$$/       $$$$$$$  |$$$$$$$$/ $$$$$$$  |$$  \\   /$$ |/$$$$$$  |$$$$$$/ $$  \\ $$ |/$$$$$$  |$$  \\ $$ | \n");
+        printf("$$$  \\ /$$$ |$$ |  $$ |$$ |  $$ |$$ |__          $$ |__$$ |$$ |__    $$ |__$$ |$$$  \\ /$$$ |$$ |__$$ |  $$ |  $$$  \\$$ |$$ |__$$ |$$$  \\$$ | \n");
+        printf("$$$$  /$$$$ |$$ |  $$ |$$ |  $$ |$$    |         $$    $$/ $$    |   $$    $$< $$$$  /$$$$ |$$    $$ |  $$ |  $$$$  $$ |$$    $$ |$$$$  $$ | \n");
+        printf("$$ $$ $$/$$ |$$ |  $$ |$$ |  $$ |$$$$$/          $$$$$$$/  $$$$$/    $$$$$$$  |$$ $$ $$/$$ |$$$$$$$$ |  $$ |  $$ $$ $$ |$$$$$$$$ |$$ $$ $$ | \n");
+        printf("$$ |$$$/ $$ |$$ \\__$$ |$$ |__$$ |$$ |_____       $$ |      $$ |_____ $$ |  $$ |$$ |$$$/ $$ |$$ |  $$ | _$$ |_ $$ |$$$$ |$$ |  $$ |$$ |$$$$ | \n");
+        printf("$$ | $/  $$ |$$    $$/ $$    $$/ $$       |      $$ |      $$       |$$ |  $$ |$$ | $/  $$ |$$ |  $$ |/ $$   |$$ | $$$ |$$ |  $$ |$$ | $$$ | \n");
+        printf("$$/      $$/  $$$$$$/  $$$$$$$/  $$$$$$$$/       $$/       $$$$$$$$/ $$/   $$/ $$/      $$/ $$/   $$/ $$$$$$/ $$/   $$/ $$/   $$/ $$/   $$/ \n");
+        puts("1. lawan BOT");
+        puts("2. local multiplayer");
+        puts("3. kembali ke menu utama");
+        printf("ketik nomor di pilihan: ");
+        scanf("%d", &choice);
+        switch (choice){
+        case 1:
+            clearScreen();
+            loadingScreen();
+            clearScreen();
+            difficultyMenu();
+            break;
+        case 2:
+            clearScreen();
+            loadingScreen();
+            game(0);
+            break;
+        case 3:
+        clearScreen();
+        loadingScreen();
+        clearScreen();
+            return 0;
+            break;
+        default:
+            puts("pilihan tidak ada");
+        }
+    }
+}
+
+
 
 int main() {
-    //declare variable disini
-    int valueWhileLoop = 1, menuSelection = 0, diffSelection = 0, leadSelection = 0;
-    system("stty -echo");//buat linux
+    int valueWhileLoop = 1, choice;
     while(valueWhileLoop){
-    mainMenu(&menuSelection);
-    disableCursor();
-    navControls(&menuSelection, 3);
-    switch(menuSelection){
-        case 0:
         clearScreen();
-        loadingScreen();
-        clearScreen();
-        difficultyMenu(&diffSelection);
-        valueWhileLoop = 1;
-        navControls(&diffSelection, 4);
-        break;
+        printf("/$$$$$$$$ /$$$$$$  /$$$$$$        /$$$$$$$$ /$$$$$$   /$$$$$$        /$$$$$$$$ /$$$$$$  /$$$$$$$$\n");
+        printf("|__  $$__/|_  $$_/ /$$__  $$      |__  $$__//$$__  $$ /$$__  $$      |__  $$__//$$__  $$| $$_____/ \n");
+        printf("   | $$     | $$  | $$  \\__/         | $$  | $$  \\ $$| $$  \\__/         | $$  | $$  \\ $$| $$      \n");
+        printf("   | $$     | $$  | $$               | $$  | $$$$$$$$| $$               | $$  | $$  | $$| $$$$$   \n");
+        printf("   | $$     | $$  | $$               | $$  | $$__  $$| $$               | $$  | $$  | $$| $$__/   \n");
+        printf("   | $$     | $$  | $$    $$         | $$  | $$  | $$| $$    $$         | $$  | $$  | $$| $$      \n");
+        printf("   | $$    /$$$$$$|  $$$$$$/         | $$  | $$  | $$|  $$$$$$/         | $$  |  $$$$$$/| $$$$$$$$\n");
+        printf("   |__/   |______/ \\______/          |__/  |__/  |__/ \\______/          |__/   \\______/ |________/ \n");
+        puts("group nasi daun ayam geprek");
+        puts("note: mohon menggunakan program ini dalam full screen");
+        puts("selamat datang di permainan tic tac toe pilih salah satu opsi:");
+        printf("\033[0;33mHINT: GUNAKAN W UNTUK SELEKSI KEATAS DAN S UNTUK SELEKSI KEBAWAH\n\033[0m");
+        puts("1. mulai permainan");
+        puts("2. leaderboard");
+        puts("3. keluar dari game");    
+        printf("ketik nomor di pilihan: ");
+        scanf("%d", &choice);
+        switch (choice){
         case 1:
+            clearScreen();
+            loadingScreen();
+            gamemode();
+            break;
+        case 2:
+            clearScreen();
+            puts("UNDERCONTRUCTION :( SORRY");
+            sleep(2);
+            break;
+        case 3:
         clearScreen();
-        puts("terima kasih telah memainkan game kami :)");
-        sleep(2);
-        valueWhileLoop = 0;
-        break;
-        case 2: 
-        clearScreen();
-        loadingScreen();
-        clearScreen();
-        leaderboardMenu(&leadSelection);
-        break;
+            puts("terima kasih telah memainkan game kami :)");
+            valueWhileLoop = 0;
+            sleep(2);
+            break;
         default:
-        break;
+            puts("pilihan tidak ada");
         }
-    }  
+    }
     return 0;
 }
 
@@ -282,6 +267,7 @@ void playerTurn(int player) {
     }
 }
 
+
 int game(int botDifficulty) {
     resetBoard();
     int player = 1, result;
@@ -291,6 +277,7 @@ int game(int botDifficulty) {
         if (botDifficulty != 0 && player == 2) {
             printf("Bot is thinking...\n");
             sleep(1);
+            clearScreen();
             botTurn(botDifficulty);
         } else {
             playerTurn(player);
@@ -303,8 +290,12 @@ int game(int botDifficulty) {
     showboard();
     if (result == 1) {
         printf("Player %d wins!\n", (player % 2) + 1);
+        sleep(2);
+        main();
     } else {
         printf("Game draw!\n");
+        sleep(2);
+        main();
     }
     return 0;
 }
