@@ -1,0 +1,6 @@
+5
+Alice 150
+Bob 200
+Charlie 120
+Dave 180
+Eve 250
