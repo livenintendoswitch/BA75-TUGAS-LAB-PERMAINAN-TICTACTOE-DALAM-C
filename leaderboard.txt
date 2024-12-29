@@ -1,6 +1,11 @@
-5
-Alice 150
-Bob 200
-Charlie 120
-Dave 180
-Eve 250
+10
+fufufafa 150
+Joykowi 200
+anakAbah 120
+Dewi 180
+Eko 250
+Fahmi 170
+Gita 220
+Hadi 190
+Ika 160
+Joko 140

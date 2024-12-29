@@ -274,120 +274,121 @@ int main() {
 
     while (valueWhileLoop) {
         clearScreen();
-        mainMenu(mainMenuSelection);
+        mainMenu(mainMenuSelection); 
         char key = getKeyboard(); 
         int result = NavKey(key, mainMenuSelection, 3); 
+
         if (result == -1) {
-            valueWhileLoop = 0; 
-            break;
-        }
-        else{
-        mainMenuSelection = result;
-        }
-    }
-    switch (mainMenuSelection) {
-        case 0: {
-            int modeSelection = 0; 
-            int loopingModeMenu = 1;  
-            clearScreen();
-            loadingScreen();
-            clearScreen();
-            while (loopingModeMenu) {
-                clearScreen();
-                gameModeMenu(modeSelection);
-                char key = getKeyboard(); 
-                int result = NavKey(key, modeSelection, 3); 
-                if (result == -1) {
-                    loopingModeMenu = 0; 
-                }else{
-                modeSelection = result;
-                }
-            }
-                switch (modeSelection) {
-                    case 0: {
+            switch (mainMenuSelection) {
+                case 0: {
+                    int modeSelection = 0; 
+                    int loopingModeMenu = 1;  
+                    clearScreen();
+                    loadingScreen();
+                    clearScreen();
+
+                    while (loopingModeMenu) {
                         clearScreen();
-                        loadingScreen();
-                        int diffSelection = 0; 
-                        int loopingSelectBotDiff = 1;  
-                        while (loopingSelectBotDiff) {
-                            clearScreen();
-                            difficultyMenu(diffSelection);
-                            char key = getKeyboard(); 
-                            int result = NavKey(key, diffSelection, 3); 
-                            if (result == -1) {
-                                loopingSelectBotDiff = 0; 
-                            } else{
-                            diffSelection = result;
-                            }
-                        }
-                            switch(diffSelection){
-                                case 0:
+                        gameModeMenu(modeSelection); 
+                        char key = getKeyboard(); 
+                        int result = NavKey(key, modeSelection, 3); 
+
+                        if (result == -1) {
+                            switch (modeSelection) {
+                                case 0: {
                                     clearScreen();
                                     loadingScreen();
-                                    clearScreen();
-                                    game(-1);
+                                    int diffselection = 0;
+                                    int loopingdiffmenu = 1;
+                                    while(loopingdiffmenu){
+                                        clearScreen();
+                                        difficultyMenu(diffselection);
+                                        char key = getKeyboard();
+                                        int result = NavKey(key, diffselection, 3);
+                                        if(result == -1){
+                                            switch(diffselection){
+                                                case 0: {
+                                                    clearScreen();
+                                                    loadingScreen();
+                                                    clearScreen();
+                                                    enableCursor();
+                                                    game(-1);
+                                                    disableCursor();
+                                                    break;
+                                                }
+                                                case 1: {
+                                                    clearScreen();
+                                                    loadingScreen();
+                                                    clearScreen();
+                                                    enableCursor();
+                                                    game(1);
+                                                    disableCursor();
+                                                    break;
+                                                }
+                                                case 2:{
+                                                    clearScreen();
+                                                    loadingScreen();
+                                                    clearScreen();
+                                                    loopingdiffmenu = 0;
+                                                    break;
+                                                }
+                                                default:{
+                                                    puts("SYSTEM ERROR");
+                                                }
+                                            }
+                                        }
+                                         else{
+                                            diffselection = result;
+                                        }
+                                    }
                                     break;
-                                case 1:
+                                }
+                                case 1: {
                                     clearScreen();
                                     loadingScreen();
-                                    clearScreen();
-                                    enableCursor();
-                                    game(1);
+                                    game(0);
                                     break;
-                                case 2:
-                                    clearScreen();
-                                    loadingScreen();
-                                    clearScreen();
-                                    loopingModeMenu = 1;
+                                }
+                                case 2: {
+                                    loopingModeMenu = 0; 
                                     break;
+                                }
                                 default:
-                                puts("system failure");       
-                                break;                         
+                                    printf("SYSTEM FAILURE\n");
+                                    break;
                             }
-                        break;
+                        } else {
+                            modeSelection = result; 
+                        }
                     }
-                    case 1: {
-                        clearScreen();
-                        loadingScreen();
-                        clearScreen();
-                        game(0);
-                        break;
-                    }
-                    case 2: {
-                        clearScreen();
-                        loadingScreen();
-                        clearScreen();
-                        valueWhileLoop = 1;
-                        printf("valueWhileLoop is set to = %d", valueWhileLoop);
-                        sleep(3);
-                        break;
-                    }
-                    default:
-                        printf("System failure.\n");
-                        break;
+                    break;
                 }
-                break;
+                case 1: {
+                    clearScreen();
+                    loadingScreen();
+                    enableCursor();
+                    menuLeaderboard(); 
+                    disableCursor();
+                    break; 
+                }
+                case 2: {
+                    clearScreen();
+                    printf("Terima kasih telah memainkan game kami :)\n");
+                    valueWhileLoop = 0; 
+                    break;
+                }
+                default:
+                    printf("SYSTEM FAILURE\n");
+                    break;
             }
-        case 1: {
-            int loopingCaseLead = 1;  
-            while (loopingCaseLead) {
-                clearScreen();
-                menuLeaderboard();
-                loopingCaseLead = 0;
-            }
+        } else {
+            mainMenuSelection = result; 
         }
-        case 2: {
-            clearScreen();
-            printf("Terima kasih telah memainkan game kami :)\n");
-            break;
-        }
-        default:
-            printf("Invalid selection.\n");
-            break;
     }
 
     return 0;
 }
+
 
 
 //KOMPONEN GAME
@@ -512,8 +513,10 @@ int game(int botDifficulty) {
     showboard();
     if (result == 1) {
         printf("Player %d wins!\n", (player % 2) + 1);
+        sleep(5);
     } else {
         printf("Game draw!\n");
+        sleep(5);
     }
     return 0;
 }
