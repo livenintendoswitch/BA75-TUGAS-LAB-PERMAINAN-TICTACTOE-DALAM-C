@@ -87,6 +87,29 @@ int NavKey(char key, int selection, int options){
     return selection;
 }
 
+void loadingScreen() {
+    puts("LOADING");
+    int i,j;
+    for (i = 0; i <= 10; i++) {
+        printf("\r[");
+        
+        for (j = 0; j < i; j++) {
+            printf("#");
+        }
+        
+        for (j = i; j < 10; j++) {
+            printf(" ");
+        }
+        
+        printf("]");
+        
+        fflush(stdout);
+        
+
+        usleep(50000);  
+    }
+}
+
 //matiin cursor
 void disableCursor() {
      printf("\033[?25l");
@@ -95,7 +118,7 @@ void enableCursor() {
     printf("\033[?25h");
 }
 //main menu
-void mainMenu(int mainMenuSelection){
+void mainMenu(int mainMenuSelection, char playerName[]){
     printf("/$$$$$$$$ /$$$$$$  /$$$$$$        /$$$$$$$$ /$$$$$$   /$$$$$$        /$$$$$$$$ /$$$$$$  /$$$$$$$$\n");
     printf("|__  $$__/|_  $$_/ /$$__  $$      |__  $$__//$$__  $$ /$$__  $$      |__  $$__//$$__  $$| $$_____/ \n");
     printf("   | $$     | $$  | $$  \\__/         | $$  | $$  \\ $$| $$  \\__/         | $$  | $$  \\ $$| $$      \n");
@@ -105,6 +128,7 @@ void mainMenu(int mainMenuSelection){
     printf("   | $$    /$$$$$$|  $$$$$$/         | $$  | $$  | $$|  $$$$$$/         | $$  |  $$$$$$/| $$$$$$$$\n");
     printf("   |__/   |______/ \\______/          |__/  |__/  |__/ \\______/          |__/   \\______/ |________/ \n");
     puts("group nasi daun ayam geprek");
+    printf("hi! \033[0;33m%s\033[0m, apa yang kamu mau lakukan hari ini?\n", playerName); 
     puts("note: mohon menggunakan program ini dalam full screen");
     puts("selamat datang di permainan tic tac toe pilih salah satu opsi:");
     printf("\033[0;33mHINT: gunakan W dan S untuk seleksi dan spasi untuk memilih\n\033[0m");
@@ -145,12 +169,13 @@ void difficultyMenu(int diffselection){
 }
 
 typedef struct {
-    char name[100];
+    char name[50];
     int points;
+    int hardModeStar; //penghargaan buat menang melawan bot susah
 } Player;
 
 void selectionSortDescending(Player players[], int numPlayers) {
-    int i,j;
+    int i, j;
     for (i = 0; i < numPlayers - 1; i++) {
         int maxIndex = i;
         for (j = i + 1; j < numPlayers; j++) {
@@ -158,7 +183,6 @@ void selectionSortDescending(Player players[], int numPlayers) {
                 maxIndex = j;
             }
         }
-        
         if (maxIndex != i) {
             Player temp = players[i];
             players[i] = players[maxIndex];
@@ -167,114 +191,119 @@ void selectionSortDescending(Player players[], int numPlayers) {
     }
 }
 
+
 void searchPlayer(Player players[], int numPlayers, const char *searchName) {
     int found = 0;
     int i;
     for (i = 0; i < numPlayers; i++) {
         if (strcmp(players[i].name, searchName) == 0) {
-            printf("pemain '%s' ditemukan dengan %d points.\n", players[i].name, players[i].points);
+            printf("Pemain '\033[1;47m%s\033[0m'  ditemukan dengan \033[1;47m%d\033[0m  points", players[i].name, players[i].points);
+            if (players[i].hardModeStar) {
+                printf(" dan pemain ini telah \033[0;32mMENANG\033[0m melawan bot mode susah\n");
+            } else {
+                printf(".\n");
+            }
             found = 1;
             break;
         }
     }
 
     if (!found) {
-        printf("pemain '%s' tidak ditemukan di leaderboard \n", searchName);
+        printf("Pemain '%s' tidak ditemukan di leaderboard.\n", searchName);
     }
 }
 
 void menuLeaderboard() {
     FILE *file = fopen("leaderboard.txt", "r");
     if (file == NULL) {
-        printf("Error: file tidak ditemukan\n");
+        printf("Error: File tidak ditemukan.\n");
         return;
     }
 
-    int numPlayers;
-    fscanf(file, "%d", &numPlayers);
+    int numPlayers = 0;
+    int i;
+    char filech;
+    while ((filech = fgetc(file)) != EOF) {
+        if (filech == '\n') {
+            numPlayers++;
+        }
+    }
+    rewind(file); 
 
     Player players[numPlayers];
-    int i;
     for (i = 0; i < numPlayers; i++) {
-        fscanf(file, "%s %d", players[i].name, &players[i].points);
+        fscanf(file, "%s %d %d", players[i].name, &players[i].points, &players[i].hardModeStar);
+    }
+    fclose(file);
+    //jika leaderboard masih kosong
+    if (numPlayers <= 1) {
+        if (numPlayers == 0) {
+            printf("Leaderboard kosong.\n");
+        }
+    } else {
+        selectionSortDescending(players, numPlayers);
     }
 
-    fclose(file);
-
-    selectionSortDescending(players, numPlayers);
-
     int loopingMenu = 1;
-    int Leadselection = 0; 
+    int Leadselection = 0;
     while (loopingMenu) {
         clearScreen();
 
         printf("Leaderboard:\n");
-        printf("Rank  pemain Name        Points\n");
-        int i;
+        printf("Rank  username      Points \n");
         for (i = 0; i < numPlayers; i++) {
-            printf("%-5d %-18s %d\n", i + 1, players[i].name, players[i].points);
+            printf("%-5d %-1s%-17s %-8d \n", i + 1, players[i].hardModeStar ? "*" : "", players[i].name, players[i].points);
         }
 
         printf("\nOpsi:\n");
-         printf("%smencari pemain%s\n", Leadselection == 0 ? "\033[0;32m" : "", Leadselection == 0 ? " <-\033[0m" : "");
+        printf("%smencari pemain%s\n", Leadselection == 0 ? "\033[0;32m" : "", Leadselection == 0 ? " <-\033[0m" : "");
         printf("%skembali ke menu%s\n", Leadselection == 1 ? "\033[0;32m" : "", Leadselection == 1 ? " <-\033[0m" : "");
 
-        char key = getKeyboard(); 
-        int result = NavKey(key, Leadselection, 2); 
-        if (result == -1) { 
+        char key = getKeyboard();
+        int result = NavKey(key, Leadselection, 2);
+        if (result == -1) {
             if (Leadselection == 0) {
                 clearScreen();
                 enableCursor();
                 char searchName[100];
+                printf("Leaderboard:\n");
+                printf("Rank  username       Points \n");
+                for (i = 0; i < numPlayers; i++) {
+                    printf("%-5d %-1s%-17s %-8d \n", i + 1, players[i].hardModeStar ? "*" : "", players[i].name, players[i].points);
+                }
                 printf("\nMasukkan nama pemain yang dicari: ");
                 scanf("%s", searchName);
                 searchPlayer(players, numPlayers, searchName);
                 sleep(5);
             } else if (Leadselection == 1) {
+                clearScreen();
+                loadingScreen();
+                clearScreen();
                 loopingMenu = 0;
             }
-            } else {
-                 Leadselection = result; 
-                }
-    }
-
-    
-    
-}
-
-void loadingScreen() {
-    puts("LOADING");
-    int i,j;
-    for (i = 0; i <= 10; i++) {
-        printf("\r[");
-        
-        for (j = 0; j < i; j++) {
-            printf("#");
+        } else {
+            Leadselection = result;
         }
-        
-        for (j = i; j < 10; j++) {
-            printf(" ");
-        }
-        
-        printf("]");
-        
-        fflush(stdout);
-        
-
-        usleep(50000);  
     }
 }
 
-int game(int botDifficulty);
+
+int game(int botDifficulty, char playerName[]);
 
 int main() {
+    enableCursor();
+	char playerName[100];
+	printf("Masukkan nama Anda: ");
+	scanf("%s", playerName);
     disableCursor();
     int valueWhileLoop = 1; 
     int mainMenuSelection = 0; 
+    
+	clearScreen();
 
     while (valueWhileLoop) {
         clearScreen();
-        mainMenu(mainMenuSelection); 
+        mainMenu(mainMenuSelection, playerName); 
         char key = getKeyboard(); 
         int result = NavKey(key, mainMenuSelection, 3); 
 
@@ -312,7 +341,7 @@ int main() {
                                                     loadingScreen();
                                                     clearScreen();
                                                     enableCursor();
-                                                    game(-1);
+                                                    game(-1,playerName);
                                                     disableCursor();
                                                     break;
                                                 }
@@ -321,7 +350,7 @@ int main() {
                                                     loadingScreen();
                                                     clearScreen();
                                                     enableCursor();
-                                                    game(1);
+                                                    game(1,playerName);
                                                     disableCursor();
                                                     break;
                                                 }
@@ -346,7 +375,7 @@ int main() {
                                 case 1: {
                                     clearScreen();
                                     loadingScreen();
-                                    game(0);
+                                    game(0,playerName);
                                     break;
                                 }
                                 case 2: {
@@ -366,6 +395,7 @@ int main() {
                 case 1: {
                     clearScreen();
                     loadingScreen();
+                    clearScreen();
                     enableCursor();
                     menuLeaderboard(); 
                     disableCursor();
@@ -374,6 +404,25 @@ int main() {
                 case 2: {
                     clearScreen();
                     printf("Terima kasih telah memainkan game kami :)\n");
+                    puts("⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣤⣤⣤⣤⣤⣤⣤⣤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀");
+                    puts("⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣿⡿⠛⠉⠙⠛⠛⠛⠛⠻⢿⣿⣷⣤⡀⠀⠀⠀⠀⠀");
+                    puts("⠀⠀⠀⠀⠀⠀⠀⠀⣼⣿⠋⠀⠀⠀⠀⠀⠀⠀⢀⣀⣀⠈⢻⣿⣿⡄⠀⠀⠀⠀");
+                    puts("⠀⠀⠀⠀⠀⠀⠀⣸⣿⡏⠀⠀⠀⣠⣶⣾⣿⣿⣿⠿⠿⠿⢿⣿⣿⣿⣄⠀⠀⠀");
+                    puts("⠀⠀⠀⠀⠀⠀⠀⣿⣿⠁⠀⠀⢰⣿⣿⣯⠁⠀⠀⠀⠀⠀⠀⠀⠈⠙⢿⣷⡄⠀");
+                    puts("⠀⠀⣀⣤⣴⣶⣶⣿⡟⠀⠀⠀⢸⣿⣿⣿⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣷⠀");
+                    puts("⠀⢰⣿⡟⠋⠉⣹⣿⡇⠀⠀⠀⠘⣿⣿⣿⣿⣷⣦⣤⣤⣤⣶⣶⣶⣶⣿⣿⣿⠀");
+                    puts("⠀⢸⣿⡇⠀⠀⣿⣿⡇⠀⠀⠀⠀⠹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠃⠀");
+                    puts("⠀⣸⣿⡇⠀⠀⣿⣿⡇⠀⠀⠀⠀⠀⠉⠻⠿⣿⣿⣿⣿⡿⠿⠿⠛⢻⣿⡇⠀⠀");
+                    puts("⠀⣿⣿⠁⠀⠀⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣧⠀⠀");
+                    puts("⠀⣿⣿⠀⠀⠀⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⠀⠀");
+                    puts("⠀⣿⣿⠀⠀⠀⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⣿⠀⠀");
+                    puts("⠀⢿⣿⡆⠀⠀⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⡇⠀⠀");
+                    puts("⠀⠸⣿⣧⡀⠀⣿⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⣿⠃⠀⠀");
+                    puts("⠀⠀⠛⢿⣿⣿⣿⣿⣇⠀⠀⠀⠀⠀⣰⣿⣿⣷⣶⣶⣶⣶⠶⠀⢠⣿⣿⠀⠀⠀");
+                    puts("⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀⠀⠀⠀⣿⣿⡇⠀⣽⣿⡏⠁⠀⠀⢸⣿⡇⠀⠀⠀");
+                    puts("⠀⠀⠀⠀⠀⠀⠀⣿⣿⠀⠀⠀⠀⠀⣿⣿⡇⠀⢹⣿⡆⠀⠀⠀⣸⣿⠇⠀⠀⠀");
+                    puts("⠀⠀⠀⠀⠀⠀⠀⢿⣿⣦⣄⣀⣠⣴⣿⣿⠁⠀⠈⠻⣿⣿⣿⣿⡿⠏⠀⠀⠀⠀");
+                    puts("⠀⠀⠀⠀⠀⠀⠀⠈⠛⠻⠿⠿⠿⠿⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀");
                     valueWhileLoop = 0; 
                     break;
                 }
@@ -401,6 +450,7 @@ void resetBoard() {
     }
 }
 void showboard() {
+    clearScreen();
     printf("\t TIC TAC TOE\n");
     printf("       |       |      \n");
     printf("   %c   |   %c   |   %c   \n", arr[1], arr[2], arr[3]);
@@ -470,8 +520,8 @@ void botTurn(int difficulty) {
     if (difficulty == -1) { // Easy difficulty
         int move;
         do {
-            move = rand() % 9 + 1; // Random number between 1 and 9
-        } while (arr[move] != '0' + move); // Ensure the move is valid
+            move = rand() % 9 + 1; // rng dari 1 sampe 9
+        } while (arr[move] != '0' + move); // validasi penaruhan X atau O
         arr[move] = 'O';
     } else { // Hard difficulty
         int move = getBestMove();
@@ -493,7 +543,77 @@ void playerTurn(int player) {
     }
 }
 
-int game(int botDifficulty) {
+void updateLeaderboard(const char *name, int points, int hardModeWin) {
+    FILE *file = fopen("leaderboard.txt", "r");
+    if (file == NULL) {
+        printf("File tidak ditemukan. Membuat leaderboard baru.\n");
+        file = fopen("leaderboard.txt", "w"); // Create new file
+        if (file == NULL) {
+            printf("Error: tidak bisa membuat leaderboard.txt\n");
+            return;
+        }
+        fclose(file);
+        file = fopen("leaderboard.txt", "r"); 
+    }
+
+    Player players[100]; // Maximum 100 players
+    int numPlayers = 0;
+    // baca data leaderboard yang sudah ada
+    while (fscanf(file, "%s %d %d", players[numPlayers].name, &players[numPlayers].points, &players[numPlayers].hardModeStar) == 3) {
+        numPlayers++;
+    }
+    fclose(file);
+
+    // validasi pemain yang udah ada atau belom
+    int found = 0, i;
+    for (i = 0; i < numPlayers; i++) {
+        if (strcmp(players[i].name, name) == 0) {
+            players[i].points += points;
+            if (hardModeWin) {
+                players[i].hardModeStar = 1; // Mark yang udah pernah menang lawan bot susah
+            }
+            found = 1;
+            break;
+        }
+    }
+
+    //nambahin pemain baru
+    if (!found) {
+        strcpy(players[numPlayers].name, name);
+        players[numPlayers].points = points;
+        players[numPlayers].hardModeStar = hardModeWin ? 1 : 0;
+        numPlayers++;
+    }
+
+    file = fopen("leaderboard.txt", "w");
+    if (file == NULL) {
+        printf("Error: leaderboard.txt tidak bisa dibuka\n");
+        return;
+    }
+
+    for (i = 0; i < numPlayers; i++) {
+        fprintf(file, "%s %d %d\n", players[i].name, players[i].points, players[i].hardModeStar);
+    }
+    fclose(file);
+
+    printf("Leaderboard sudah diupdate\n");
+}
+
+void validateDiffPoints(int botDifficulty, const char *playerName, int playerWon) {
+    int points = 0;
+    int hardModeWin = 0;
+
+    if (playerWon) {
+        if (botDifficulty == -1) { // Easy bot
+            points += 50;
+        } else if (botDifficulty == 1) { // Hard bot
+            points += 200;
+            hardModeWin = 1; // Mark bot susah menang
+        }
+        updateLeaderboard(playerName, points, hardModeWin);
+    }
+}
+int game(int botDifficulty, char playerName[]) {
     resetBoard();
     int player = 1, result;
 
@@ -513,9 +633,17 @@ int game(int botDifficulty) {
     showboard();
     if (result == 1) {
         printf("Player %d wins!\n", (player % 2) + 1);
+        if ((player % 2) + 1 == 1) { // If Player 1 wins
+            if (botDifficulty != 0) {
+                validateDiffPoints(botDifficulty, playerName, 1); // validasi skoring untuk mode bot
+            }
+        }
         sleep(5);
     } else {
         printf("Game draw!\n");
+        if (botDifficulty != 0) {
+            updateLeaderboard(playerName, 10, 0); //kalo draw dia dapet 10 poin aja
+        }
         sleep(5);
     }
     return 0;
