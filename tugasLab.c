@@ -291,7 +291,6 @@ void menuLeaderboard() {
 int game(int botDifficulty, char playerName[]);
 
 int main() {
-    enableCursor();
 	char playerName[100];
 	printf("Masukkan nama Anda: ");
 	scanf("%s", playerName);

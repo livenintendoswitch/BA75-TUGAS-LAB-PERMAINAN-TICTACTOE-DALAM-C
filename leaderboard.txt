@@ -3,9 +3,9 @@ Joykowi 50 0
 fufufafa 150 1
 MahkamahAdik 100 0
 MahkamahKakak 150 0
-gemoy 50 1
+gemoy 200 1
 ambatukam 70 0
 ambatunat 100 0
 ambatubas 60 0
 ambatron 50 0
-V 450 1
+muljono 450 1
